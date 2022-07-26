@@ -161,4 +161,5 @@ cython_debug/
 
 # Extras
 .vscode/
-src/config.py
+bot/src/config.py
+/requirements.in
