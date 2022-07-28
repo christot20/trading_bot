@@ -3,13 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from alpaca_trade_api.stream import Stream
 from datetime import date, timedelta
-from ..src.helpers import *
-from ..src.config import BASE_URL, ALPACA_API_KEY, ALPACA_SECRET_KEY, data_feed
-
-# run using python -m bot.src.main
-# use pip-compile to get stuff for requirements .txt
-# use pipreqs --force to get base packages   
-# use pip install -r requirements.txt to run
+from src.helpers import *
+from src.config import BASE_URL, ALPACA_API_KEY, ALPACA_SECRET_KEY, data_feed
 
 # look at how to set up your code/organize like that guy did with ai bot
 # start trying to have it make trades as a test and try to learn how to use an AI for it later
