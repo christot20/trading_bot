@@ -3,37 +3,57 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from alpaca_trade_api.stream import Stream
 from datetime import date, timedelta
-from src.helpers import *
+from src.helpers import checkTime
+from src.reddit_method import reddit_mode
 from src.config import BASE_URL, ALPACA_API_KEY, ALPACA_SECRET_KEY, data_feed
 
 # look at how to set up your code/organize like that guy did with ai bot
 # start trying to have it make trades as a test and try to learn how to use an AI for it later
 
-def main():
-    # Instantiate REST API Connection
-    alpaca_client = api.REST(key_id=ALPACA_API_KEY, secret_key=ALPACA_SECRET_KEY, base_url=BASE_URL, api_version='v2')
-    account = alpaca_client.get_account()
-    print(account)
+# def main():
+#     # Instantiate REST API Connection
+#     alpaca_client = api.REST(key_id=ALPACA_API_KEY, secret_key=ALPACA_SECRET_KEY, base_url=BASE_URL, api_version='v2')
+#     account = alpaca_client.get_account()
+#     print(account)
 
-    STOCK_DATA = pd.DataFrame()
-    while len(STOCK_DATA) == 0:
-        try:
-            stock = input("Enter a stock ticker: ")
-            STOCK_DATA = alpaca_client.get_bars(stock, '1Day', (date.today()-timedelta(days=30)).isoformat()).df # getting 30 day avg
-        except:
-            pass    
+#     STOCK_DATA = pd.DataFrame()
+#     while len(STOCK_DATA) == 0:
+#         try:
+#             stock = input("Enter a stock ticker: ")
+#             STOCK_DATA = alpaca_client.get_bars(stock, '1Day', (date.today()-timedelta(days=30)).isoformat()).df # getting 30 day avg
+#         except:
+#             pass    
 
-    print(STOCK_DATA)
-    # Plot stock price data
-    plot = STOCK_DATA.plot(y="close", use_index=True, legend=False)
-    plot.set_xlabel("Date")
-    plot.set_ylabel(f"{stock.upper()} Close Price ($)")
-    plt.show()
-    
+#     print(STOCK_DATA)
+#     # Plot stock price data
+#     plot = STOCK_DATA.plot(y="close", use_index=True, legend=False)
+#     plot.set_xlabel("Date")
+#     plot.set_ylabel(f"{stock.upper()} Close Price ($)")
+#     plt.show()
+
+def chooser(choice):
+    if choice == "r":
+        reddit_mode(checkTime)
+    else:
+        print("ughgh")
 
 
 if __name__  == "__main__":
-    main()
+    # main()
+    # while True:
+    #     reddit_mode()
+    while True:
+        valid_choices = ["r", "a", "m"]
+        choice = input("Enter what method to choose (algorithmic: A, reddit: R, or machine learning: M): ").lower()
+        if choice not in valid_choices:
+            print("Please Enter a Valid Choice!")
+        else:
+            break
+    chooser(choice)
+
+
+
+
     # # Instantiate REST API Connection
     # alpaca_client = api.REST(key_id=ALPACA_API_KEY, secret_key=ALPACA_SECRET_KEY, base_url=BASE_URL, api_version='v2')
 
