@@ -10,28 +10,23 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 
 import time
 from datetime import date, timedelta
-from helpers import the_reddit, manual_method
+from helpers import the_reddit
 
 # maybe try to make this a class?
 def reddit_mode(trading_client, stock_client):
     #Instantiate Reddit Mode and Helpers
     money_maker = the_reddit()
     # Instantiate REST API Connection
-    account = trading_client.get_account()
-    print(account)
-    print(account.buying_power) # buying power
     stocks = money_maker.api_method()
 
     multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=stocks)
     latest_multisymbol_quotes = stock_client.get_stock_latest_quote(multisymbol_request_params)
 
-    for stock in stocks:
-        if (float(account.buying_power) - float(account.last_maintenance_margin)) > 5000:
-            money_maker.buyer(account, stock, trading_client, latest_multisymbol_quotes, stocks)
+    money_maker.buyer(trading_client, latest_multisymbol_quotes, stocks, "reddit_method")
             # money_maker.seller(stock, trading_client, current_positions, .1)
     
     current_positions = {stock.symbol : stock.avg_entry_price for stock in trading_client.get_all_positions()}
-    money_maker.streamer(current_positions, trading_client) # have it check positions periodically
+    money_maker.streamer(current_positions, trading_client, "reddit_method") # have it check positions periodically
     # pass a status parameter through reddit mode for on and off to determine if streamer should be called
 
 

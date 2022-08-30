@@ -162,6 +162,5 @@ cython_debug/
 # Extras
 .vscode/
 src/config.py
-shell_scripts
 requirements.in
 
