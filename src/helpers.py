@@ -1,11 +1,9 @@
-from turtle import pos
 import requests
 from nltk.corpus import stopwords
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.live import StockDataStream
 from db_intializer import db
-from alpaca.data.requests import StockLatestQuoteRequest
 from config import REDDIT_ID, REDDIT_NAME, REDDIT_SECRET, ALPACA_API_KEY, ALPACA_SECRET_KEY, BASE_URL
 
 
@@ -46,15 +44,14 @@ class the_reddit:
         top_set, hot_set = set(top_stocks), set(hot_stocks) # change to sets to merge
         return list(top_set.union(hot_set)) # final list of stocks to buy
 
-    def buyer(self, trading_client, stock_client, stocks, db_name):
+    def buyer(self, trading_client, latest_multisymbol_quotes, stocks, db_name):
         db_execute = []
-        latest_multisymbol_quotes = stock_client.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=stocks))
         for stock in stocks:
             acc_value = trading_client.get_account()
-            latest_ask_price = float(latest_multisymbol_quotes[stock].ask_price) # ask price of the stock
+            latest_ask_price = float(latest_multisymbol_quotes[stock].ask_price) # price of stock (ask)
             amount = int((float(acc_value.buying_power))//(latest_ask_price * 100)) # amount of stock to buy
             print(stock, " ", amount)
-            if float(latest_ask_price) * amount < float(acc_value.buying_power): # check if acc has enough to buy stock
+            if float(latest_ask_price) * amount < float(acc_value.buying_power): # checks if possible to buy stock
                 market_order_data = MarketOrderRequest(
                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
                             qty=amount, # gonna want to determine quantity based on amount of $ in acc and price per share
@@ -66,21 +63,11 @@ class the_reddit:
                 market_order = trading_client.submit_order(
                                 order_data=market_order_data
                             )
-                # I call the stock_client latest quote function again so that it can take into account what I just bought at
-                db_execute.append((stock, "BUY", amount, stock_client.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=stocks))[stock].ask_price, market_order.submitted_at, acc_value.portfolio_value))
+                db_execute.append((stock, "BUY", amount, latest_multisymbol_quotes[stock].ask_price, market_order.submitted_at, acc_value.portfolio_value))
             else:
                 continue
         executer = db(db_name)
         executer.table_inserter(db_execute)
-    
-    def seller(self, trading_client, data, positions):
-        acc_value = trading_client.get_account()
-        db_execute = []
-        sell = trading_client.close_position(data.symbol) # sells positions based on price diff %
-        print(sell) # use for logging transactions (do same with buys for ur db)
-        del positions[data.symbol]
-        db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, acc_value.portfolio_value))
-        return db_execute
 
     def streamer(self, positions, trading_client, db_name): # used 
         wss_client = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET_KEY)
@@ -91,7 +78,12 @@ class the_reddit:
             if data.symbol in positions:
                 sell_eq = (float(positions[data.symbol]) - float(data.ask_price)) / float(data.ask_price)
                 if abs(sell_eq) > .2: # doesn't matter if it's down or up
-                    db_execute = self.seller(trading_client, data, positions, db_name)
+                    acc_value = trading_client.get_account()
+                    db_execute = []
+                    sell = trading_client.close_position(data.symbol) # sells positions based on price diff %
+                    print(sell) # use for logging transactions (do same with buys for ur db)
+                    del positions[data.symbol]
+                    db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, acc_value.portfolio_value))
                     executer.table_inserter(db_execute)
 
         wss_client.subscribe_quotes(quote_data_handler, *list(positions.keys())) # get data for this list of stocks
