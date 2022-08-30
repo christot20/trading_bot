@@ -1,48 +1,60 @@
-# import praw
-# from tqdm import tqdm    ### used for manual method
-# import yfinance as yf
-# import pandas as pd
-# import numpy as np
-# import re
-# from nltk.corpus import stopwords
-
+from turtle import pos
 import requests
+from nltk.corpus import stopwords
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.live import StockDataStream
-
 from db_intializer import db
+from alpaca.data.requests import StockLatestQuoteRequest
 from config import REDDIT_ID, REDDIT_NAME, REDDIT_SECRET, ALPACA_API_KEY, ALPACA_SECRET_KEY, BASE_URL
 
+
 class the_reddit:
-    def api_method(self):
+    def __init__(self):
+        self.slang = [  # more should be constantly added
+            'YOLO', 'BUY', 'SELL', 'LFG', 'SHORT', 'LONG', 'WSB', 'HOLD', 'BAG', 'HYPE', 'BET', 'HODL',
+            'BULL', 'BEAR', 'LOSS', 'GAIN', 'FTW', 'APE', 'APES', 'OP', 'DD', 'CEO', 'OTM', 'WSB1', 'WSB2',
+            'WSB3', 'IV', 'LMAO', 'RC', 'RYAN', 'COHEN', 'MOON', 'IRS', 'TAX', 'FOMO', 'CPI', 'PM', 'F', 'U',
+            'ITM', 'RIP', 'LOL', 'AH', 'PUT', 'CALL', 'GO', 'BABY', 'NFT', 'HANDS', 'SEC', 'LINK', 'OH', 'RSI',
+            'WSB4', 'WSB5', 'WSB6', 'WSB7', 'WSB8', 'WSB9', 'WSB10', 'WTF', 'BTFO', 'ATH', 'DRS', 'WTH', 'DTC', 'IMO'
+            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED'
+        ]
+        self.stop = [word.upper() for word in set(stopwords.words('english'))]
+
+    def api_method(self, current_positions):
         url = "https://apewisdom.io/api/v1.0/filter/wallstreetbets/page/1" # url to send reauest to
         r =  requests.get(url) # send request to api
         data = r.json() # raw api data
         stocks = list(data.values())[3] # stocks to check
         top_stocks, hot_stocks = [], [] # used to store stocks to buy
+        false_positives = set(self.slang + self.stop + current_positions)
         for value in stocks:
-            if "ETF" in value['name'].upper() or "TRUST" in value['name'].upper(): # Ignore ETFs
+            if len(top_stocks) == 3 and len(hot_stocks) == 2:
+                break
+
+            mentions = 0 if value['mentions'] == None else value['mentions']
+            past_mentions = 0 if value['mentions_24h_ago'] == None else value['mentions_24h_ago']
+        
+            if "ETF" in value['name'].upper() or "TRUST" in value['name'].upper() or value['ticker'] in false_positives: # check to see if not in portfolio, Ignore ETFs and slang and stopwords
                 continue # issues with getting stuff like HE, LFG, RC, FOR, etc.
-            if len(top_stocks) < 5:
+            if len(top_stocks) < 3:
                 top_stocks.append(value['ticker'])
-            try:
-                perc_diff = ((int(value['mentions']) - int(value['mentions_24h_ago'])) / int(value['mentions_24h_ago'])) * 100 # perc diff of mentions
-                if perc_diff > 200 and len(hot_stocks) < 5:
-                    hot_stocks.append(value['ticker'])
-            except: # if no other stocks are found with that perc diff don't add more
-                pass
+            perc_diff = ((int(mentions) - int(past_mentions)) / int(past_mentions)) * 100 # perc diff of mentions
+            if perc_diff > 100 and len(hot_stocks) < 2 and value['ticker'] not in top_stocks:
+                hot_stocks.append(value['ticker'])
+            
         top_set, hot_set = set(top_stocks), set(hot_stocks) # change to sets to merge
         return list(top_set.union(hot_set)) # final list of stocks to buy
 
-    def buyer(self, trading_client, latest_multisymbol_quotes, stocks, db_name):
+    def buyer(self, trading_client, stock_client, stocks, db_name):
         db_execute = []
+        latest_multisymbol_quotes = stock_client.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=stocks))
         for stock in stocks:
             acc_value = trading_client.get_account()
-            latest_ask_price = float(latest_multisymbol_quotes[stock].ask_price)
-            amount = int((float(acc_value.buying_power))//(latest_ask_price * 500))
+            latest_ask_price = float(latest_multisymbol_quotes[stock].ask_price) # ask price of the stock
+            amount = int((float(acc_value.buying_power))//(latest_ask_price * 100)) # amount of stock to buy
             print(stock, " ", amount)
-            if float(latest_ask_price) * amount < float(acc_value.buying_power):
+            if float(latest_ask_price) * amount < float(acc_value.buying_power): # check if acc has enough to buy stock
                 market_order_data = MarketOrderRequest(
                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
                             qty=amount, # gonna want to determine quantity based on amount of $ in acc and price per share
@@ -54,11 +66,21 @@ class the_reddit:
                 market_order = trading_client.submit_order(
                                 order_data=market_order_data
                             )
-                db_execute.append((stock, "BUY", amount, latest_multisymbol_quotes[stock].ask_price, market_order.submitted_at, acc_value.portfolio_value))
+                # I call the stock_client latest quote function again so that it can take into account what I just bought at
+                db_execute.append((stock, "BUY", amount, stock_client.get_stock_latest_quote(StockLatestQuoteRequest(symbol_or_symbols=stocks))[stock].ask_price, market_order.submitted_at, acc_value.portfolio_value))
             else:
                 continue
         executer = db(db_name)
         executer.table_inserter(db_execute)
+    
+    def seller(self, trading_client, data, positions):
+        acc_value = trading_client.get_account()
+        db_execute = []
+        sell = trading_client.close_position(data.symbol) # sells positions based on price diff %
+        print(sell) # use for logging transactions (do same with buys for ur db)
+        del positions[data.symbol]
+        db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, acc_value.portfolio_value))
+        return db_execute
 
     def streamer(self, positions, trading_client, db_name): # used 
         wss_client = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET_KEY)
@@ -69,12 +91,7 @@ class the_reddit:
             if data.symbol in positions:
                 sell_eq = (float(positions[data.symbol]) - float(data.ask_price)) / float(data.ask_price)
                 if abs(sell_eq) > .2: # doesn't matter if it's down or up
-                    acc_value = trading_client.get_account()
-                    db_execute = []
-                    sell = trading_client.close_position(data.symbol) # sells positions based on price diff %
-                    print(sell) # use for logging transactions (do same with buys for ur db)
-                    del positions[data.symbol]
-                    db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, acc_value.portfolio_value))
+                    db_execute = self.seller(trading_client, data, positions, db_name)
                     executer.table_inserter(db_execute)
 
         wss_client.subscribe_quotes(quote_data_handler, *list(positions.keys())) # get data for this list of stocks
@@ -96,6 +113,12 @@ class the_reddit:
 
 
 ########################## Old Method
+# import praw
+# from tqdm import tqdm    ### used for manual method
+# import yfinance as yf
+# import pandas as pd
+# import numpy as np
+# import re
 
 # slang = [  # more should be constantly added
 #             'YOLO', 'BUY', 'SELL', 'LFG', 'SHORT', 'LONG', 'WSB', 'HOLD', 'BAG', 'HYPE', 'BET', 'HODL',

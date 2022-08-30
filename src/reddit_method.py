@@ -17,12 +17,9 @@ def reddit_mode(trading_client, stock_client):
     #Instantiate Reddit Mode and Helpers
     money_maker = the_reddit()
     # Instantiate REST API Connection
-    stocks = money_maker.api_method()
+    stocks = money_maker.api_method([stock.symbol for stock in trading_client.get_all_positions()])
 
-    multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=stocks)
-    latest_multisymbol_quotes = stock_client.get_stock_latest_quote(multisymbol_request_params)
-
-    money_maker.buyer(trading_client, latest_multisymbol_quotes, stocks, "reddit_method")
+    money_maker.buyer(trading_client, stock_client, stocks, "reddit_method")
             # money_maker.seller(stock, trading_client, current_positions, .1)
     
     current_positions = {stock.symbol : stock.avg_entry_price for stock in trading_client.get_all_positions()}
