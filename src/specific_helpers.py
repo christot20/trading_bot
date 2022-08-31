@@ -29,11 +29,13 @@ class the_reddit:
                 continue # issues with getting stuff like HE, LFG, RC, FOR, etc., slang and stopwords used for that
             if len(top_stocks) < 3: # top stocks finder
                 top_stocks.append(value['ticker'])
-                
-            perc_diff = ((int(mentions) - int(past_mentions)) / int(past_mentions)) * 100 # perc diff of mentions
-            if perc_diff > 100 and len(hot_stocks) < 2 and value['ticker'] not in top_stocks: # hot stocks finder
-                hot_stocks.append(value['ticker'])
-                
+            try:    
+                perc_diff = ((int(mentions) - int(past_mentions)) / int(past_mentions)) * 100 # perc diff of mentions
+                if perc_diff > 100 and len(hot_stocks) < 2 and value['ticker'] not in top_stocks: # hot stocks finder
+                    hot_stocks.append(value['ticker'])
+            except:
+                pass
+
         return (top_stocks + hot_stocks) # list of stocks
 
     def api_method(self, current_positions): 
