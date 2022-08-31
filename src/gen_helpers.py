@@ -1,3 +1,4 @@
+from turtle import pos
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.live import StockDataStream
@@ -35,6 +36,16 @@ class operations:
         executer = db(self.db_name)
         executer.table_inserter(db_execute)
 
+    def seller(self, positions, data):
+        sell_eq = (float(positions[data.symbol]) - float(data.ask_price)) / float(data.ask_price) # determines if to sell or not
+        if abs(sell_eq) > 0: # doesn't matter if it's down or up
+            db_execute = []
+            sell = self.trading_client.close_position(data.symbol) # sells positions based on price diff %
+            print(sell) # use for logging transactions (do same with buys for ur db)
+            db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, self.trading_client.get_account().portfolio_value))
+            del positions[data.symbol]
+            return db_execute
+
     def streamer(self, positions): # used 
         wss_client = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET_KEY)
         executer = db(self.db_name)
@@ -42,14 +53,9 @@ class operations:
         async def quote_data_handler(data: any):
             # quote data will arrive here
             if data.symbol in positions:
-                sell_eq = (float(positions[data.symbol]) - float(data.ask_price)) / float(data.ask_price) # determines if to sell or not
-                if abs(sell_eq) > .2: # doesn't matter if it's down or up
-                    db_execute = []
-                    sell = self.trading_client.close_position(data.symbol) # sells positions based on price diff %
-                    print(sell) # use for logging transactions (do same with buys for ur db)
-                    del positions[data.symbol]
-                    db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, self.trading_client.get_account().portfolio_value))
-                    executer.table_inserter(db_execute)
+                db_execute = self.seller(positions, data) # test if this method works with sell, if yes then try to get something to work with the buyer func to be async
+                executer.table_inserter(db_execute)
+                print(positions)
 
         wss_client.subscribe_quotes(quote_data_handler, *list(positions.keys())) # get data for this list of stocks
         wss_client.run()
