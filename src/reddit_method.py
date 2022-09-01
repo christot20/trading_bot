@@ -24,7 +24,7 @@ def reddit_mode(trading_client, stock_client):
     latest_multisymbol_quotes = stock_client.get_stock_latest_quote(multisymbol_request_params)
 
     buy_sell.buyer(latest_multisymbol_quotes, stocks)
-    time.sleep(5)
+    time.sleep(10)
     current_positions = {stock.symbol : stock.avg_entry_price for stock in trading_client.get_all_positions()}
     print(current_positions) # successfully lists all positions
     buy_sell.streamer(current_positions) # sells all of when needed

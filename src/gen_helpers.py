@@ -37,7 +37,7 @@ class operations:
 
     def seller(self, positions, data):
         sell_eq = abs(((float(positions[data.symbol]) - float(data.bid_price)) / float(data.bid_price)) * 100) # determines if to sell or not
-        if sell_eq > 20: # doesn't matter if it's down or up, 20% is the threshold
+        if sell_eq > -1: # doesn't matter if it's down or up, 20% is the threshold
             db_execute = []
             sell = self.trading_client.close_position(data.symbol) # sells positions based on price diff %
             print(sell) # use for logging transactions (do same with buys for ur db)
