@@ -7,8 +7,6 @@
 # import time
 # from datetime import date, timedelta
 
-import time
-from alpaca.data.requests import StockLatestQuoteRequest
 from src.specific_helpers import the_reddit
 from src.gen_helpers import operations
 
@@ -16,18 +14,11 @@ from src.gen_helpers import operations
 def reddit_mode(trading_client, stock_client):
     #Instantiate Reddit Mode and Helpers
     money_maker = the_reddit()
-    buy_sell = operations(trading_client, "reddit_method")
-    # Instantiate REST API Connection
+    buy_sell = operations(stock_client, trading_client, "reddit_method")
+    # call upon apewisdom api to get stocks most actively talked about
     stocks = money_maker.api_method([stock.symbol for stock in trading_client.get_all_positions()])
-
-    multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=stocks)
-    latest_multisymbol_quotes = stock_client.get_stock_latest_quote(multisymbol_request_params)
-
-    buy_sell.buyer(latest_multisymbol_quotes, stocks)
-    time.sleep(10)
-    current_positions = {stock.symbol : stock.avg_entry_price for stock in trading_client.get_all_positions()}
-    print(current_positions) # successfully lists all positions
-    buy_sell.streamer(current_positions) # sells all of when needed
+    # buy and sell stocks
+    buy_sell.streamer(stocks)
 
 
 
