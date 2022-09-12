@@ -50,7 +50,7 @@ class db:
 
     
 
-# db_thing = db("reddit_method")
+# db_thing = db("algo_method")
 # insertions = [
 #         ("AMC", 45, 18.36, "2022-08-16 13:23:44", 140533.69),
 #         ("GME", 13, 41.89, "2022-08-17 09:33:15", 93532.01),

@@ -1,9 +1,9 @@
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.live import StockDataStream
-from alpaca.data.requests import StockLatestQuoteRequest
+import time 
+import yfinance as yf
 from db_intializer import db
-import time
 from config import ALPACA_API_KEY, ALPACA_SECRET_KEY
 
 class operations: 
@@ -13,14 +13,16 @@ class operations:
         self.db_name = db_name
         self.stock_client = stock_client
 
-    def buyer(self, latest_multisymbol_quotes, stocks):
+    def buyer(self, stocks):
         db_execute = []
         for stock in stocks:
+            stock_info = yf.Ticker(stock).info
             acc_value = self.trading_client.get_account()
-            latest_ask_price = float(latest_multisymbol_quotes[stock].ask_price) # price of stock (ask)
-            amount = int((float(acc_value.buying_power))//(latest_ask_price * 100)) # amount of stock to buy
+            market_price = float(stock_info['regularMarketPrice']) # price of stock 
+            print(market_price, acc_value.buying_power)
+            amount = int((float(acc_value.buying_power))//(market_price * 100)) # amount of stock to buy
             print(stock, " ", amount)
-            if float(latest_ask_price) * amount < float(acc_value.buying_power): # checks if possible to buy stock
+            if float(market_price) * amount < float(acc_value.buying_power): # checks if possible to buy stock
                 # Market order
                 market_order_data = MarketOrderRequest(
                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
@@ -32,33 +34,35 @@ class operations:
                 market_order = self.trading_client.submit_order(
                                 order_data=market_order_data
                             )
-                db_execute.append((stock, "BUY", amount, latest_ask_price, market_order.submitted_at, self.trading_client.get_account().portfolio_value))
+                db_execute.append((stock, "BUY", amount, market_price, market_order.submitted_at, self.trading_client.get_account().portfolio_value))
             else:
                 continue
-        executer = db(self.db_name)
-        executer.table_inserter(db_execute)
+        return db_execute
 
     def seller(self, positions, data):
-        sell_eq = abs(((float(positions[data.symbol]) - float(data.ask_price)) / float(data.ask_price)) * 100) # determines if to sell or not
-        if sell_eq > 20: # doesn't matter if it's down or up, 20% is the threshold
+        stock_info = yf.Ticker(data.symbol).info
+        time.sleep(5) # let stock info load
+        market_price = float(stock_info['regularMarketPrice'])
+        # print(stock_info)
+        sell_eq = abs(((float(positions[data.symbol]) - market_price) / market_price) * 100) # determines if to sell or not
+        if sell_eq > 20: # doesn't matter if it's down or up, 20% is the threshold    # I CHANGED THIS AND AM CHECKING IF THE SQL CMD IS XECUTED IN BY FUNCTION
             db_execute = []
             sell = self.trading_client.close_position(data.symbol) # sells positions based on price diff %
             print(sell) # use for logging transactions (do same with buys for ur db)
-            db_execute.append((sell.symbol, "SELL", int(sell.qty), float(data.ask_price), sell.submitted_at, self.trading_client.get_account().portfolio_value))
+            db_execute.append((sell.symbol, "SELL", int(sell.qty), market_price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
             del positions[data.symbol]
             print(positions)
             return db_execute
 
     def streamer(self, stocks): # TRY TO ADD BUY FUNCTION HERE NOW AND GET POSITIONS
-        multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=stocks)
-        latest_multisymbol_quotes = self.stock_client.get_stock_latest_quote(multisymbol_request_params)
-        self.buyer(latest_multisymbol_quotes, stocks)
+        executer = db(self.db_name)
+        db_execute = self.buyer(stocks)
+        executer.table_inserter(db_execute)
         time.sleep(10) # wait for all positions to load
         positions = {stock.symbol : stock.avg_entry_price for stock in self.trading_client.get_all_positions()}
         print(positions)
        
         wss_client = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET_KEY)
-        executer = db(self.db_name)
         # async handler
         async def quote_data_handler(data: any):
             # quote data will arrive here

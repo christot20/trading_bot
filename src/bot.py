@@ -3,6 +3,7 @@ from alpaca.data.historical import StockHistoricalDataClient
 
 from src.config import ALPACA_API_KEY, ALPACA_SECRET_KEY
 from src.reddit_method import reddit_mode
+from src.algo_method import algo_mode
 
 # look at how to set up your code/organize like that guy did with ai bot
 # start trying to have it make trades as a test and try to learn how to use an AI for it later
@@ -22,7 +23,7 @@ if __name__  == "__main__":
     if choice == "r":
         reddit_mode(trading_client, stock_client)
     elif choice == "a":
-        pass
+        algo_mode(trading_client, stock_client)
     else:
         pass # M choice
 
