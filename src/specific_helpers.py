@@ -18,7 +18,7 @@ class the_reddit:
     Simple formula used to calculate popularity: (upvotes / mentions) / rank
     This is the POP score
 
-    Certian stocks come up due to the nature of finding stocks, letters in all caps and with $ behind them, when they shouldn't and create false positives
+    Certain stocks come up due to the nature of finding stocks, letters in all caps and with $ behind them, when they shouldn't and create false positives
     NLTK stopwords and my own small list of words tries to filter and fix this issue
     '''
     
@@ -43,34 +43,12 @@ class the_reddit:
                     '24hr Mentions',
                     'POP Score'
                 ]
-    
-    # def stock_finder(self, false_positives, stocks): # returns set from hot and top stocks to choose from
-    #     top_stocks, hot_stocks = [], [] # used to store stocks to buy
-    #     for value in stocks:
-    #         if len(top_stocks) == 3 and len(hot_stocks) == 2:
-    #             break
 
-    #         mentions = 0 if value['mentions'] == None else value['mentions'] # used for perc diff if being talked about a lot
-    #         past_mentions = 0 if value['mentions_24h_ago'] == None else value['mentions_24h_ago']
-        
-    #         if "ETF" in value['name'].upper() or "TRUST" in value['name'].upper() or value['ticker'] in false_positives: # check to see if in portfolio, Ignore ETFs and slang and stopwords
-    #             continue # issues with getting stuff like HE, LFG, RC, FOR, etc., slang and stopwords used for that
-    #         if len(top_stocks) < 3: # top stocks finder
-    #             top_stocks.append(value['ticker'])
-    #         try:    
-    #             perc_diff = ((int(mentions) - int(past_mentions)) / int(past_mentions)) * 100 # perc diff of mentions
-    #             if perc_diff > 100 and len(hot_stocks) < 2 and value['ticker'] not in top_stocks: # hot stocks finder
-    #                 hot_stocks.append(value['ticker'])
-    #         except:
-    #             pass
-
-    #     return (top_stocks + hot_stocks) # list of stocks
-
-    def api_method(self, current_positions): 
+    def api_method(self): 
         r =  requests.get(self.url) # send request to api
         data = r.json() # raw api data
         stocks = list(data.values())[3] # stocks to check
-        false_positives = set(self.slang + self.stop + current_positions)
+        false_positives = set(self.slang + self.stop)
         # return self.stock_finder(false_positives, stocks) # final list of stocks to buy
         return self.stocker(false_positives, stocks)
 
@@ -156,7 +134,7 @@ class the_algo:
             'EV/GP Percentile',
             'RV Score'
         ]
-        self.stock_data = pd.read_csv(f"src/nasdaq_stock_list.csv")   # stocks to analyze
+        self.stock_data = pd.read_csv(f"datasets/nasdaq_stock_list.csv")   # stocks to analyze
         self.stocks = self.stock_data["Symbol"].tolist()
 
     def df_initializer(self):
@@ -237,6 +215,7 @@ class the_algo:
     def stock_finder(self):
         rv_dataframe = self.df_initializer()
         rv_dataframe = self.df_fixer(rv_dataframe)
+        print(rv_dataframe)
         
         rv_dataframe = rv_dataframe[:10] # get top 10 values
         rv_dataframe.reset_index(drop = True, inplace = True) # drop other values
@@ -245,7 +224,6 @@ class the_algo:
 
         #Print the entire DataFrame    
         print(rv_dataframe)
-        print(len(rv_dataframe))
         print(stock_list)
         return stock_list
 
