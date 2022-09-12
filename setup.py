@@ -1,7 +1,7 @@
 # pip install -e .
 # pip install -r requirements.txt
-# use pip-compile to get stuff for requirements .txt
-# use pipreqs --force to get base packages
+# use pip-compile to get stuff for requirements .txt (piptools)
+# use pipreqs --force to get base packages (pipreqs)
 
 # pip install alpaca-py  ## use for alpaca error
 # python -m pip install mysql-connector-python   ## use if _version error is found
