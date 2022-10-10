@@ -22,7 +22,7 @@ if (($Day -ne "Saturday" -and $Day -ne "Sunday") -and ($Date -notin $HolidayTabl
     Start-Process "c:/trading_bot/venv/Scripts/python.exe" -ArgumentList "c:/trading_bot/src/bot.py"
     $wshell = New-Object -ComObject wscript.shell
     Start-Sleep 10
-    $wshell.SendKeys('a') # make something so that it takes an input on what to choose (r, a, or m)
+    $wshell.SendKeys('m') # make something so that it takes an input on what to choose (r, a, or m)
     $wshell.SendKeys('{ENTER}')
     Start-Sleep ((get-date "4:00pm") - (get-date)).TotalSeconds
     Stop-Process -Name "Python" # works
@@ -34,7 +34,3 @@ if (($Day -ne "Saturday" -and $Day -ne "Sunday") -and ($Date -notin $HolidayTabl
 
 # next things to do are try to get this working on main machine, start working on algo version
 # and more tests
-
-
-## THIS ONE SHOULD RUN AT AROUND 9:10 SO IT CAN LOAD FROM THE CSV
-

@@ -1,17 +1,13 @@
 from alpaca.trading.client import TradingClient
 from alpaca.data.historical import StockHistoricalDataClient
-from src.config import ALPACA_API_KEY, ALPACA_SECRET_KEY
+from src.config import Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY
 from src.trading_methods import methods
 
 # look at how to set up your code/organize like that guy did with ai bot
 # start trying to have it make trades as a test and try to learn how to use an AI for it later
-
-if __name__  == "__main__":
+def main():
     # paper=True enables paper trading
-    trader = methods()
-    trading_client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY, paper=True)
-    # used for stock data 
-    stock_client = StockHistoricalDataClient(ALPACA_API_KEY,  ALPACA_SECRET_KEY)    
+    trader = methods()    
     while True:
         valid_choices = ("r", "a", "m")
         choice = input("Enter what method to choose (algorithmic: A, reddit: R, or machine learning: M): ").lower()
@@ -20,11 +16,20 @@ if __name__  == "__main__":
         else:
             break
     if choice == "r":
+        trading_client = TradingClient(Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, paper=True) # each has different keys since they are on different accounts
+        stock_client = StockHistoricalDataClient(Reddit_ALPACA_API_KEY,  Reddit_ALPACA_SECRET_KEY)
         trader.reddit_mode(trading_client, stock_client)
     elif choice == "a":
+        trading_client = TradingClient(Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, paper=True)
+        stock_client = StockHistoricalDataClient(Algo_ALPACA_API_KEY,  Algo_ALPACA_SECRET_KEY)
         trader.algo_mode(trading_client, stock_client)
     else:
-        pass # M choice
+        trading_client = TradingClient(Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY, paper=True)
+        stock_client = StockHistoricalDataClient(Neural_ALPACA_API_KEY,  Neural_ALPACA_SECRET_KEY)
+        trader.neural_mode(trading_client, stock_client)
+
+if __name__  == "__main__":
+    main()
 
 
 
