@@ -14,7 +14,7 @@ class methods:
         print(sell_list)
         # buy and sell stocks
         buy_sell.buyer(buy_list)
-        buy_sell.seller(buy_list)
+        buy_sell.seller(sell_list)
 
     def algo_mode(self, trading_client, stock_client):
         money_maker = the_algo() # instance of algo method 
@@ -30,7 +30,7 @@ class methods:
         print(sell_list)
         # buy and sell stocks
         buy_sell.buyer(buy_list)
-        buy_sell.seller(buy_list)   
+        buy_sell.seller(sell_list)   
 
     def neural_mode(self, trading_client, stock_client):
         money_maker = the_net() # instance of net method 
@@ -41,4 +41,4 @@ class methods:
         print(sell_list)
         # buy and sell stocks
         buy_sell.buyer(buy_list)
-        buy_sell.seller(buy_list) # maybe change all these to singular function in bot.py? have the object instance and db as parameter?
+        buy_sell.seller(sell_list) # maybe change all these to singular function in bot.py? have the object instance and db as parameter?

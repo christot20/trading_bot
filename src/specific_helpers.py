@@ -25,6 +25,7 @@ class the_reddit:
 
     Certain stocks come up due to the nature of finding stocks, letters in all caps and with $ behind them, when they shouldn't and create false positives
     NLTK stopwords and my own small list of words tries to filter and fix this issue
+    Website used for WSB stock data: https://apewisdom.io
     '''
     
     def __init__(self):
@@ -127,7 +128,7 @@ class the_algo:
     Takes mean percentile of each category to find "relative value"
     This is the RV score
 
-    NASDAQ csv up to date as of 9/10/2022
+    S&P 500 csv up to date as of 10/1/2022
 
     Strategy influenced by algorithmic trading with python by freecodecamp: https://www.youtube.com/watch?v=xfzGZB4HhEE
     '''
@@ -148,7 +149,7 @@ class the_algo:
             'EV/GP Percentile',
             'RV Score'
         ]
-        self.stock_data = pd.read_csv(f"datasets/sp500_companies_test.csv")   # stocks to analyze
+        self.stock_data = pd.read_csv(f"C:/trading_bot/datasets/sp500_companies.csv")   # stocks to analyze
         self.stocks = self.stock_data["Symbol"].tolist()
 
     def df_initializer(self):
@@ -271,7 +272,7 @@ class the_net:
     
     The The Neural Net Model Used is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
     LSTM proves to be very effective and accurate when predicting time series, hence why it was chosen
-    NASDAQ csv up to date as of 9/10/2022
+    S&P 500 csv up to date as of 10/1/2022
 
     Strategy influenced by Stock Price Prediction Using Python & Machine Learning by Computer Science: https://www.youtube.com/watch?v=QIUxPv5PJOY
     '''
@@ -284,7 +285,7 @@ class the_net:
                     'Accuracy',
                     'Value'
                 ]
-        self.stock_data = pd.read_csv(f"datasets/sp500_companies_test.csv")
+        self.stock_data = pd.read_csv(f"C:/trading_bot/datasets/sp500_companies.csv")
         self.stocks = self.stock_data["Symbol"].tolist()        
         self.num_days_predict = 60 # amount of days used to predict next day
 

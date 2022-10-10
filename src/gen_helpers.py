@@ -15,6 +15,7 @@ class operations:
 
     def buyer(self, stocks):
         db_execute = []
+        executer = db(self.db_name)
         for stock in stocks:
             stock_info = yf.Ticker(stock).info
             acc_value = self.trading_client.get_account()
@@ -37,10 +38,11 @@ class operations:
                 db_execute.append((stock, "BUY", amount, market_price, market_order.submitted_at, self.trading_client.get_account().portfolio_value))
             else:
                 continue
-        return db_execute
+        executer.table_inserter(db_execute)
 
 
     def seller(self, stocks):
+        executer = db(self.db_name)
         for stock in stocks:
             stock_info = yf.Ticker(stock).info
             time.sleep(2) # let stock info load
@@ -49,7 +51,7 @@ class operations:
             sell = self.trading_client.close_position(stock) # sells positions based on price diff %
             print(sell) # use for logging transactions (do same with buys for ur db)
             db_execute.append((sell.symbol, "SELL", int(sell.qty), market_price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
-            return db_execute
+            executer.table_inserter(db_execute)
 
     # def seller(self, positions, data):
     #     stock_info = yf.Ticker(data.symbol).info

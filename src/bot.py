@@ -10,7 +10,7 @@ def main():
     trader = methods()    
     while True:
         valid_choices = ("r", "a", "m")
-        choice = input("Enter what method to choose (algorithmic: A, reddit: R, or machine learning: M): ").lower()
+        choice = input("Enter what method to choose (reddit: R, algorithmic: A, or machine learning: M): ").lower()
         if choice not in valid_choices:
             print("Please Enter a Valid Choice!")
         else:
