@@ -371,7 +371,8 @@ class the_net:
                                     pred_price,
                                     perc_chng,
                                     accuracy_avg,
-                                    perc_chng / accuracy_avg  # (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg (was finicking with size of dataset, structure of net, and value eq)
+                                    perc_chng / accuracy_avg  # (was finicking with size of dataset, structure of net, and value eq)
+                                    # (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg if u want to base choices on accuracy
                                 ], 
                                 index=self.columns
                             ) 
