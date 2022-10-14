@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import time
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Dropout
@@ -9,7 +10,8 @@ from tqdm import tqdm
 from nltk.corpus import stopwords
 from scipy import stats
 from statistics import mean
-from src.config import IEX_CLOUD_API_TOKEN
+from src.gen_helpers import operations
+from src.config import IEX_CLOUD_API_TOKEN, REMOTE_SERVER
 
 
 class the_reddit:
@@ -51,6 +53,7 @@ class the_reddit:
                 ]
 
     def api_method(self, trading_client): 
+        operations.is_connected(REMOTE_SERVER)
         r =  requests.get(self.url) # send request to api
         data = r.json() # raw api data
         stocks = list(data.values())[3] # stocks to check
@@ -106,6 +109,7 @@ class the_reddit:
         reddit_df = pd.concat(appender, axis=1, ignore_index=True).T
         # reddit_df.sort_values(by='POP Score', inplace = True, ascending=False)
         reddit_df = reddit_df.sort_values(by='POP Score', ascending=False)
+        print(reddit_df.to_string())
         new_reddit_df = reddit_df[:10] # get top 10 values
         # reddit_df.reset_index(drop = True, inplace = True) # drop other values
         new_reddit_df = new_reddit_df.reset_index(drop = True) # drop other values
@@ -157,6 +161,7 @@ class the_algo:
 
         appender = [] # used to add each row using concat
         for symbol in tqdm(self.stocks, desc="Loading"):
+            operations.is_connected(REMOTE_SERVER)
             try:
                 batch_api_call_url = f'https://sandbox.iexapis.com/stable/stock/market/batch?symbols={symbol}&types=quote,advanced-stats&token={IEX_CLOUD_API_TOKEN}' # api call to get IEX info
                 data = requests.get(batch_api_call_url).json() # IEX data
@@ -229,21 +234,21 @@ class the_algo:
         rv_dataframe = rv_dataframe.sort_values(by = 'RV Score') # sort by RV score
         return rv_dataframe
     
-    def stock_seller(self, positions, buy_list, df):
+    def stock_seller(self, positions, buy_list, df): # check current positions and stocks to buy to see whether to remove from buy list or sell from positions
         sell_list = []
         for stock in set().union(positions, buy_list):
             result = df.loc[df["Ticker"] == stock]
             if result["RV Score"].values > .2:
                 if stock in buy_list:
-                    buy_list.remove(stock)
+                    buy_list.remove(stock) # remove from buy list
                 if stock in positions:
-                    sell_list.append(stock)
-        return buy_list, sell_list
+                    sell_list.append(stock) # sell stock
+        return buy_list, sell_list # return new buy list and sell list
 
     def stock_finder(self, trading_client):
         rv_dataframe = self.df_initializer()
         rv_dataframe = self.df_fixer(rv_dataframe)
-        # print(rv_dataframe)
+        print(rv_dataframe.to_string())
         
         new_rv_dataframe = rv_dataframe[:10] # get top 10 values
         # rv_dataframe.reset_index(drop = True, inplace = True) # drop other values     #### MAKE THE LIST OF STOCKS DF SEPEARTE FROM RVDF, USE RV DF TO KNOW WHEN TO SELL STOCKS
@@ -315,13 +320,28 @@ class the_net:
         xdays_test = np.array(xdays_test)
         xdays_test = np.reshape(xdays_test, (xdays_test.shape[0], xdays_test.shape[1], 1))
         return xdays_test
-    
+
+    def data_checker(self, stock, ticker_data, dataset):
+        i = 0
+        while dataset.empty: # made this for when i get a network error so that it pauses model training
+            if i == 60:
+                print(f'10 Minutes have passed. Exception will be raised for {stock}.')
+                break
+            print(f'{stock} DataFrame is empty! Retrying....')
+            time.sleep(10)
+            dataset = ticker_data.history(period="5Y")
+            i += 1
+            print(dataset)
+        return dataset
+
     def stock_predictor(self):
         gen_stock_appender = []
         for stock in tqdm(self.stocks, desc="Loading..."):
+            ticker_data = yf.Ticker(stock) # stock
+            dataset = ticker_data.history(period="5Y") # stock data
+            dataset = self.data_checker(stock, ticker_data, dataset)
+
             try:
-                dataset = yf.Ticker(stock) # stock
-                dataset = dataset.history(period="5Y") # stock data
                 dataset = dataset.filter(["Close"]) # make dataframe of stock close prices
                 data_cut = (len(dataset) * 3) // 4 # used to cut data into training and testing
                 data = dataset.values # convert train data to numpy array
@@ -392,14 +412,14 @@ class the_net:
 
     def stock_seller(self, positions, buy_list, df):
         sell_list = []
-        for stock in set().union(positions, buy_list):
+        for stock in set().union(positions, buy_list): # check current positions and stocks to buy to see whether to remove from buy list or sell from positions
             result = df.loc[df["Ticker"] == stock]
             if result["Value"].values < 0:
                 if stock in buy_list:
-                    buy_list.remove(stock)
+                    buy_list.remove(stock) # remove from buy list
                 if stock in positions:
-                    sell_list.append(stock)
-        return buy_list, sell_list
+                    sell_list.append(stock) # sell stock
+        return buy_list, sell_list # return new buy list and sell list
 
     def stock_chooser(self, trading_client):
         gen_stock_df = pd.DataFrame(columns = self.columns)
@@ -413,94 +433,10 @@ class the_net:
         new_stock_df = new_stock_df.reset_index(drop = True) # drop other values
 
         buy_list = new_stock_df.Ticker.values.tolist()  # list of stocks in top 10
-        # print(gen_stock_df.to_string())
+        print(gen_stock_df.to_string())
         # print(new_stock_df)
         # print(stock_list)
 
         positions = [stock.symbol for stock in trading_client.get_all_positions()] # current positions
         buy_list, sell_list = self.stock_seller(positions, buy_list, gen_stock_df) # final stocks to buy and sell
         return buy_list, sell_list
-
-########################## Old Method for getting stock in reddit
-# import praw
-# from tqdm import tqdm    ### used for manual method
-# import yfinance as yf
-# import pandas as pd
-# import numpy as np
-# import re
-# from config import REDDIT_ID, REDDIT_NAME, REDDIT_SECRET
-
-
-# def manual_method():
-#     def checker(stocks):
-#         full_stock_list = []
-#         for stock in tqdm(stocks, desc="Please Wait"):
-#             ticker = yf.Ticker(stock)
-#             try:
-#                 if (ticker.info['regularMarketPrice'] == None):
-#                     continue
-#                 full_stock_list.append(stock)
-#             except:
-#                 # print(f"Cannot get info of {stock}, it probably does not exist")
-#                 continue
-            
-#             # Got the info of the ticker, do more stuff with it
-#             # print(f"Info of {stock}: {info}")
-#         return full_stock_list[:10] #lucky seven >:)
-
-#     def iterator(words, post_wrd_freq, slang):
-#         '''
-#         iterates through block of text and gets word frequency and
-#         places into above dictionary
-#         '''
-#         # NLTK stopwords
-#         stop = set(stopwords.words('english'))
-#         # Remove punctuation and links
-#         # words = re.sub(r"\$[^\]]+", "", words)
-#         # words = re.sub(r'[^\w\s]', '', words) # change btween these 2
-#         words = re.sub(r"(@\[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", words) # and this
-#         # make lowercase and remove stopwords
-#         words = " ".join([word for word in words.split() if word.lower() not in (stop)])
-        
-#         for word in words.split():
-#             # print(word)
-#             if (word not in post_wrd_freq and word.isupper()) and word not in slang:
-#                 post_wrd_freq[word] = 1
-#             elif (word in post_wrd_freq and word.isupper()) and word not in slang:
-#                 post_wrd_freq[word] += 1
-#     def main():
-
-#         reddit = praw.Reddit(client_id=REDDIT_ID, client_secret=REDDIT_SECRET, user_agent=REDDIT_NAME) 
-#         wsb = reddit.subreddit('wallstreetbets')
-        
-#         post_wrd_freq = {} # dict with words and how many times found
-#         posts = [] # used to get posts and turn into df
-
-#         for post in wsb.hot(limit=500):
-#             posts.append([post.title, post.score, post.id, post.subreddit, post.url, post.num_comments, post.selftext, post.created])
-#         posts = pd.DataFrame(posts,columns=['title', 'score', 'id', 'subreddit', 'url', 'num_comments', 'body', 'created'])
-#         # print(posts)
-
-#         for column in tqdm(posts["id"]):
-#             submission = reddit.submission(id=column)
-#             submission.comments.replace_more(limit=0)
-#             iterator(posts.loc[posts['id'] == column, 'body'].values[0], post_wrd_freq, slang)
-#             for comment in submission.comments.list():
-#                 iterator(comment.body, post_wrd_freq, slang)
-
-#             # for top_level_comment in submission.comments:
-#             #     if isinstance(top_level_comment, MoreComments):
-#             #         continue
-#             #     iterator(top_level_comment.body)
-#                 # now try to make something to save these bodies and look at what stocks
-#                 # are being talked about the most and if buy, sell, and hold is being used with them
-#         # print(post_wrd_freq)
-
-#         print(sorted(post_wrd_freq, key=post_wrd_freq.get, reverse=True))
-#         print(sorted(post_wrd_freq, key=post_wrd_freq.get, reverse=True)[:5])
-#         test_set = (sorted(post_wrd_freq, key=post_wrd_freq.get, reverse=True))[:50]
-#         print(checker(test_set))
-
-#     main()
-
-# # manual_method()

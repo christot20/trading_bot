@@ -1,10 +1,10 @@
+import socket
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-from alpaca.data.live import StockDataStream
-import time 
 import yfinance as yf
 from db_intializer import db
-# from config import ALPACA_API_KEY, ALPACA_SECRET_KEY
+from config import REMOTE_SERVER
+
 
 class operations: 
 
@@ -13,10 +13,29 @@ class operations:
         self.db_name = db_name
         self.stock_client = stock_client
 
+    @staticmethod
+    def is_connected(hostname): 
+        status = False
+        while status == False:
+            # https://stackoverflow.com/questions/20913411/test-if-an-internet-connection-is-present-in-python by miraculixx
+            try: 
+                # see if we can resolve the host name -- tells us if there is
+                # a DNS listening
+                host = socket.gethostbyname(hostname)
+                # connect to the host -- tells us if the host is actually reachable
+                s = socket.create_connection((host, 80), 2) # ((host, port), timeout) where port 80 = http
+                s.close()
+                status = True
+            except Exception:
+                # print("Retrying...")
+                # time.sleep(5)
+                pass # we ignore any errors, returning False
+
     def buyer(self, stocks):
         db_execute = []
         executer = db(self.db_name)
         for stock in stocks:
+            operations.is_connected(REMOTE_SERVER)
             stock_info = yf.Ticker(stock).info
             acc_value = self.trading_client.get_account()
             market_price = float(stock_info['regularMarketPrice']) # price of stock 
@@ -24,6 +43,7 @@ class operations:
             amount = int((float(acc_value.buying_power))//(market_price * 100)) # amount of stock to buy
             print(stock, " ", amount)
             if float(market_price) * amount < float(acc_value.buying_power): # checks if possible to buy stock
+                operations.is_connected(REMOTE_SERVER)
                 # Market order
                 market_order_data = MarketOrderRequest(
                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
@@ -44,49 +64,13 @@ class operations:
     def seller(self, stocks):
         executer = db(self.db_name)
         for stock in stocks:
+            operations.is_connected(REMOTE_SERVER)
             stock_info = yf.Ticker(stock).info
-            time.sleep(2) # let stock info load
+            # time.sleep(2) # let stock info load
             market_price = float(stock_info['regularMarketPrice'])
             db_execute = []
+            operations.is_connected(REMOTE_SERVER)
             sell = self.trading_client.close_position(stock) # sells positions based on price diff %
             print(sell) # use for logging transactions (do same with buys for ur db)
             db_execute.append((sell.symbol, "SELL", int(sell.qty), market_price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
             executer.table_inserter(db_execute)
-
-    # def seller(self, positions, data):
-    #     stock_info = yf.Ticker(data.symbol).info
-    #     time.sleep(5) # let stock info load
-    #     market_price = float(stock_info['regularMarketPrice'])
-    #     # print(stock_info)
-    #     sell_eq = abs(((float(positions[data.symbol]) - market_price) / market_price) * 100) # determines if to sell or not
-    #     if sell_eq > 20: # doesn't matter if it's down or up, 20% is the threshold    # I CHANGED THIS AND AM CHECKING IF THE SQL CMD IS XECUTED IN BY FUNCTION
-    #         db_execute = []
-    #         sell = self.trading_client.close_position(data.symbol) # sells positions based on price diff %
-    #         print(sell) # use for logging transactions (do same with buys for ur db)
-    #         db_execute.append((sell.symbol, "SELL", int(sell.qty), market_price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
-    #         del positions[data.symbol]
-    #         print(positions)
-    #         return db_execute
-
-    # def streamer(self, stocks): # TRY TO ADD BUY FUNCTION HERE NOW AND GET POSITIONS
-    #     executer = db(self.db_name)
-    #     db_execute = self.buyer(stocks)
-    #     executer.table_inserter(db_execute)
-    #     time.sleep(10) # wait for all positions to load
-    #     positions = {stock.symbol : stock.avg_entry_price for stock in self.trading_client.get_all_positions()}
-    #     print(positions)
-       
-    #     wss_client = StockDataStream(ALPACA_API_KEY, ALPACA_SECRET_KEY)
-    #     # async handler
-    #     async def quote_data_handler(data: any):
-    #         # quote data will arrive here
-    #         if data.symbol in positions:
-    #             db_execute = self.seller(positions, data) # test if this method works with sell, if yes then try to get something to work with the buyer func to be async
-    #             executer.table_inserter(db_execute)
-
-    #     wss_client.subscribe_quotes(quote_data_handler, *list(positions.keys())) # get data for this list of stocks
-    #     wss_client.run()
-
-
-# check to see if the value that is being inputted into the database at where u bought and sold is the same when looking at alpaca
-# otherwise, try to get something else to get the price of a stock
