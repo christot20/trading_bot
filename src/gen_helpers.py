@@ -39,10 +39,11 @@ class operations:
             stock_info = yf.Ticker(stock).info
             acc_value = self.trading_client.get_account()
             market_price = float(stock_info['regularMarketPrice']) # price of stock 
-            print(market_price, acc_value.buying_power)
-            amount = int((float(acc_value.buying_power))//(market_price * 100)) # amount of stock to buy
-            print(stock, " ", amount)
-            if float(market_price) * amount < float(acc_value.buying_power): # checks if possible to buy stock
+            # print(market_price, acc_value.buying_power)
+            print(market_price, acc_value.cash)
+            amount = int((float(acc_value.cash ) * .005)//(market_price)) # amount of stock to buy (roughly enough to buy 10 stocks a day for a month)
+            print(stock, " ", amount)                                       # I give each account 500k just in case it wants to buy an expensive stocks
+            if float(market_price) * amount < float(acc_value.cash) and (float(market_price) * amount )> 0: # checks if possible to buy stock (i use available cash to avoid margin)
                 operations.is_connected(REMOTE_SERVER)
                 # Market order
                 market_order_data = MarketOrderRequest(
