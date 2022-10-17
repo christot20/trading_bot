@@ -53,7 +53,7 @@ class the_reddit:
                 ]
 
     def api_method(self, trading_client): 
-        operations.is_connected(REMOTE_SERVER)
+        operations.is_connected(REMOTE_SERVER) # check if connected to internet
         r =  requests.get(self.url) # send request to api
         data = r.json() # raw api data
         stocks = list(data.values())[3] # stocks to check
@@ -67,7 +67,7 @@ class the_reddit:
     def stock_seller(self, buy_list, positions):
         sell_list = []
         for stock in positions:
-            if stock not in buy_list:
+            if stock not in buy_list: # sell stock if not "popular" anymore
                 sell_list.append(stock)
         return buy_list, sell_list
 
@@ -161,7 +161,7 @@ class the_algo:
 
         appender = [] # used to add each row using concat
         for symbol in tqdm(self.stocks, desc="Loading"):
-            operations.is_connected(REMOTE_SERVER)
+            operations.is_connected(REMOTE_SERVER) # check if connected to internet
             try:
                 batch_api_call_url = f'https://sandbox.iexapis.com/stable/stock/market/batch?symbols={symbol}&types=quote,advanced-stats&token={IEX_CLOUD_API_TOKEN}' # api call to get IEX info
                 data = requests.get(batch_api_call_url).json() # IEX data

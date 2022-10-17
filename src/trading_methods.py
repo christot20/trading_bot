@@ -21,11 +21,6 @@ class methods:
         buy_sell = operations(stock_client, trading_client, "algo_method") # buy and sell and monitor functions
         # find stocks using algo method
         buy_list, sell_list = money_maker.stock_finder(trading_client)
-
-        # maybe send in the trading client as a parameter for the stock finder thing so that you can get positions and check whether to sell stocks or not from there
-        # something like money_maker.stock_finder(trading_client) and use the positions thing up top to look for df and return stocks to sell instead of the dataframe
-        # gonna want to change the sell function after this too
-
         print(buy_list)
         print(sell_list)
         # buy and sell stocks

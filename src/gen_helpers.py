@@ -14,7 +14,7 @@ class operations:
         self.stock_client = stock_client
 
     @staticmethod
-    def is_connected(hostname): 
+    def is_connected(hostname): # used to make sure connection to internet is made before calling apis
         status = False
         while status == False:
             # https://stackoverflow.com/questions/20913411/test-if-an-internet-connection-is-present-in-python by miraculixx
@@ -31,9 +31,9 @@ class operations:
                 # time.sleep(5)
                 pass # we ignore any errors, returning False
 
-    def buyer(self, stocks):
+    def buyer(self, stocks): # used to buy stocks using alpaca-py api
         db_execute = []
-        executer = db(self.db_name)
+        executer = db(self.db_name) # execute buying to be recorded in db
         for stock in stocks:
             operations.is_connected(REMOTE_SERVER)
             stock_info = yf.Ticker(stock).info
@@ -61,8 +61,8 @@ class operations:
         executer.table_inserter(db_execute)
 
 
-    def seller(self, stocks):
-        executer = db(self.db_name)
+    def seller(self, stocks): # used to sell stocks using alpaca-py api
+        executer = db(self.db_name) # execute selling to be recorded in db
         for stock in stocks:
             operations.is_connected(REMOTE_SERVER)
             stock_info = yf.Ticker(stock).info
