@@ -37,7 +37,7 @@ class the_reddit:
             'WSB3', 'IV', 'LMAO', 'RC', 'RYAN', 'COHEN', 'MOON', 'IRS', 'TAX', 'FOMO', 'CPI', 'PM', 'F', 'U',
             'ITM', 'RIP', 'LOL', 'AH', 'PUT', 'CALL', 'GO', 'BABY', 'NFT', 'HANDS', 'SEC', 'LINK', 'OH', 'RSI',
             'WSB4', 'WSB5', 'WSB6', 'WSB7', 'WSB8', 'WSB9', 'WSB10', 'WTF', 'BTFO', 'ATH', 'DRS', 'WTH', 'DTC', 'IMO'
-            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED'
+            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED', 'TA', 'IG', 'EV', 'CEO', 'CTO', 'COO', 'CFO', 'IQ'
         ]
         self.stop = [word.upper() for word in set(stopwords.words('english'))]
         self.url = "https://apewisdom.io/api/v1.0/filter/wallstreetbets/page/1" # url to send request to
@@ -86,7 +86,7 @@ class the_reddit:
         appender = []
         for dicti in stocks:  
 
-            pop_score = (int(dicti['upvotes']) / int(dicti['mentions'])) / int(dicti['rank']) # I like this
+            pop_score = (int(dicti['upvotes']) / int(dicti['rank'])) * int(dicti['mentions']) # I like this (prioritizes mentions and uses upvotes per rank)
 
             dicti = self.data_cleaner(false_positives, dicti)
             if dicti == None:
