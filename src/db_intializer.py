@@ -2,6 +2,11 @@ from mysql.connector import connect
 from src.config import db_password
 
 class db:
+    '''
+    This class contains method regularly used by me to create
+    tables in a db that are used by the trading methods to save
+    what trades were made and when they were made.
+    '''
     def __init__(self, table):
         self.table = table
         self.cnx = connect(
@@ -49,62 +54,6 @@ class db:
         return fresult
 
     
-
-# db_thing = db("algo_method")
-# insertions = [
-#         ("AMC", 45, 18.36, "2022-08-16 13:23:44", 140533.69),
-#         ("GME", 13, 41.89, "2022-08-17 09:33:15", 93532.01),
-#         ("BBBY", 7, 32.54, "2022-08-17 15:45:21", 1543765.72)
-#     ]
-# db_thing.table_inserter(insertions)
+# uncomment to make tables here
+# db_thing = db("reddit_method")
 # db_thing.table_creator()
-
-
-# uncomment to use
-
-    # # Connect to server
-    # with mysql.connector.connect(
-    #     host="localhost",
-    #     port=3306,
-    #     user="root",
-    #     password=db_password,
-    #     database="purchase_history"
-    # ) as connection:
-    # #     create_table_query = """
-    # # CREATE TABLE ai_method(
-    # #     id INT AUTO_INCREMENT PRIMARY KEY,
-    # #     ticker VARCHAR(5),
-    # #     amount INT,
-    # #     price FLOAT,
-    # #     date DATETIME
-    # # )
-    # # """
-    # #     show_table_query = "DESCRIBE ai_method"
-
-    #     # insert_query = """
-    #     # INSERT INTO reddit_method (ticker, amount, price, date)
-    #     # VALUES(%s, %s, %s, %s)
-    #     # """
-
-    #     # insertions = [
-    #     #     ("AMC", 45, 18.36, "2022-08-16 13:23:44", 140533.69),
-    #     #     ("GME", 13, 41.89, "2022-08-17 09:33:15", 93532.01),
-    #     #     ("BBBY", 7, 32.54, "2022-08-17 15:45:21", 1543765.72)
-    #     # ]
-
-    #     select_query = "SELECT * FROM reddit_method"
-    #     with connection.cursor() as cursor:
-    #         # cursor.executemany(insert_query, insertions)
-    #         cursor.execute(select_query)
-    #         result = cursor.fetchall() # gonna wanna get that date time from the orders to then inser into here
-    #         for row in result: # along with all other info
-    #             print(row) # queries used were above, you can make a list of tuples and send it over to execute
-    #         # connection.commit()
-
-    #         # make test for db function and other function
-    #         # have this function require name of table (such as reddit_method so query can use it like
-    #         # INSERT INTO {table}) as well as the array of tuples to put the data in
-
-
-
-

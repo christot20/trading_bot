@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 from scipy import stats
 from statistics import mean
 from src.gen_helpers import operations
-from src.config import IEX_CLOUD_API_TOKEN, REMOTE_SERVER
+from src.config import IEX_CLOUD_API_TOKEN, REMOTE_SERVER, PROJECT_PATH
 
 
 class the_reddit:
@@ -22,7 +22,7 @@ class the_reddit:
     2. Upvotes of each stock
     3. Rank compared to other stocks
     
-    Simple formula used to calculate popularity: (upvotes / mentions) / rank
+    Simple formula used to calculate popularity: (upvotes / rank) * mentions
     This is the POP score
 
     Certain stocks come up due to the nature of finding stocks, letters in all caps and with $ behind them, when they shouldn't and create false positives
@@ -37,7 +37,7 @@ class the_reddit:
             'WSB3', 'IV', 'LMAO', 'RC', 'RYAN', 'COHEN', 'MOON', 'IRS', 'TAX', 'FOMO', 'CPI', 'PM', 'F', 'U',
             'ITM', 'RIP', 'LOL', 'AH', 'PUT', 'CALL', 'GO', 'BABY', 'NFT', 'HANDS', 'SEC', 'LINK', 'OH', 'RSI',
             'WSB4', 'WSB5', 'WSB6', 'WSB7', 'WSB8', 'WSB9', 'WSB10', 'WTF', 'BTFO', 'ATH', 'DRS', 'WTH', 'DTC', 'IMO'
-            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED', 'TA', 'IG', 'EV', 'CEO', 'CTO', 'COO', 'CFO', 'IQ'
+            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED', 'TA', 'IG', 'EV', 'CEO', 'CTO', 'COO', 'CFO', 'IQ', 'TWTR'
         ]
         self.stop = [word.upper() for word in set(stopwords.words('english'))]
         self.url = "https://apewisdom.io/api/v1.0/filter/wallstreetbets/page/1" # url to send request to
@@ -134,7 +134,7 @@ class the_algo:
 
     S&P 500 csv up to date as of 10/1/2022
 
-    Strategy influenced by algorithmic trading with python by freecodecamp: https://www.youtube.com/watch?v=xfzGZB4HhEE
+    Strategy influenced from Algorithmic Trading with Python by freecodecamp: https://www.youtube.com/watch?v=xfzGZB4HhEE
     '''
     
     def __init__(self):
@@ -153,7 +153,7 @@ class the_algo:
             'EV/GP Percentile',
             'RV Score'
         ]
-        self.stock_data = pd.read_csv(f"C:/trading_bot/datasets/sp500_companies.csv")   # stocks to analyze
+        self.stock_data = pd.read_csv(f"{PROJECT_PATH}/datasets/sp500_companies.csv")   # stocks to analyze
         self.stocks = self.stock_data["Symbol"].tolist()
 
     def df_initializer(self):
@@ -268,14 +268,14 @@ class the_net:
         1. Matrix of prices from intervals given by num_days_predict
         2. Price of next day after num_days_predict interval to predict
     Outputs:
-        1. "Accuracy" of each model run of stock time series (RMSE, MPAE, MAE)
+        1. "Accuracy" of each model run of stock time series using several methodologies (RMSE, MPAE, MAE) and getting the average between them
         2. Predicted Stock Price for Next Day based on training and testing data
 
-    Stocks are then chosen based on a dataframe with the "value" score being determined by: (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg   
-    This is just the accuracy of each model with those that predict the price going up being higher than those predicting it to go down
-    The more accurate the model was at predicting the stock's price and higher the % change from last close, the higher the value
+    Stocks are then chosen based on a dataframe with the "value" score being determined by: perc_chng / accuracy_avg   
+    This is balances the overall value of choosing each by anchoring its anticipated price to the accuracy of the model itself.
+    This leads to some interesting choices from the model that can be risky or safe.
     
-    The The Neural Net Model Used is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
+    The The Neural Net Model Stucture is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
     LSTM proves to be very effective and accurate when predicting time series, hence why it was chosen
     S&P 500 csv up to date as of 10/1/2022
 
@@ -290,7 +290,7 @@ class the_net:
                     'Accuracy',
                     'Value'
                 ]
-        self.stock_data = pd.read_csv(f"C:/trading_bot/datasets/sp500_companies.csv")
+        self.stock_data = pd.read_csv(f"{PROJECT_PATH}/datasets/sp500_companies.csv")
         self.stocks = self.stock_data["Symbol"].tolist()        
         self.num_days_predict = 60 # amount of days used to predict next day
 
@@ -315,7 +315,7 @@ class the_net:
         return x_test, y_test
 
     def predict_data(self, dataset, scaler):
-        last_x_days = dataset[-self.num_days_predict:].values
+        last_x_days = dataset[-self.num_days_predict:].values # data used for prediction of tomorrow
         xdays_test = [scaler.transform(last_x_days)]
         xdays_test = np.array(xdays_test)
         xdays_test = np.reshape(xdays_test, (xdays_test.shape[0], xdays_test.shape[1], 1))
@@ -323,7 +323,7 @@ class the_net:
 
     def data_checker(self, stock, ticker_data, dataset):
         i = 0
-        while dataset.empty: # made this for when i get a network error so that it pauses model training
+        while dataset.empty: # made this for when I get a network error so that it pauses model training
             if i == 60:
                 print(f'10 Minutes have passed. Exception will be raised for {stock}.')
                 break

@@ -35,7 +35,7 @@ if (($Day -ne "Saturday" -and $Day -ne "Sunday") -and ($Date -notin $HolidayTabl
         }
         $counter++
     }
-    Start-Sleep ((get-date "11:00am") - (get-date)).TotalSeconds # wait for everything to be done by 11 at latest
+    # Start-Sleep ((get-date "08:00pm") - (get-date)).TotalSeconds # wait for everything to be done by 11 at latest
     # Stop-Process -Name "Python" # close python
 }
 # $wshell.SendKeys('exit') # exit the window

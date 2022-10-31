@@ -163,5 +163,6 @@ cython_debug/
 .vscode/
 src/config.py
 src/tests.py
+src/acc_data.csv
 requirements.in
 TA_Lib-0.4.24-cp310-cp310-win_amd64.whl
