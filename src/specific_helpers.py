@@ -132,7 +132,7 @@ class the_algo:
     Takes mean percentile of each category to find "relative value"
     This is the RV score
 
-    S&P 500 csv up to date as of 10/1/2022
+    S&P 500 csv up to date as of 11/1/2022
 
     Strategy influenced from Algorithmic Trading with Python by freecodecamp: https://www.youtube.com/watch?v=xfzGZB4HhEE
     '''
@@ -238,7 +238,7 @@ class the_algo:
         sell_list = []
         for stock in set().union(positions, buy_list):
             result = df.loc[df["Ticker"] == stock]
-            if result["RV Score"].values > .2:
+            if result["RV Score"].size > 0 and result["RV Score"].values > .2:
                 if stock in buy_list:
                     buy_list.remove(stock) # remove from buy list
                 if stock in positions:
@@ -277,7 +277,7 @@ class the_net:
     
     The The Neural Net Model Stucture is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
     LSTM proves to be very effective and accurate when predicting time series, hence why it was chosen
-    S&P 500 csv up to date as of 10/1/2022
+    S&P 500 csv up to date as of 11/1/2022
 
     Strategy influenced by Stock Price Prediction Using Python & Machine Learning by Computer Science: https://www.youtube.com/watch?v=QIUxPv5PJOY
     '''

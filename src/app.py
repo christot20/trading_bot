@@ -102,7 +102,7 @@ while True:
 
         # fill in those three columns with respective metrics or KPIs
         kpi1.metric(
-            label="Reddit Account Value 🤮",
+            label="Reddit Account Value 🤑",
             value=f"$ {round(float(r_trading_client.get_account().portfolio_value),2)} ",
             delta=round(float(r_trading_client.get_account().portfolio_value) - 500000, 2)
         )
@@ -124,7 +124,7 @@ while True:
 
         # fill in those three columns with respective metrics or KPIs
         kpi4.metric(
-            label="Reddit Account Buying Power 🤮",
+            label="Reddit Account Buying Power 🤑",
             value=f"$ {round(float(r_trading_client.get_account().buying_power),2)} ",
             delta=round(float(r_trading_client.get_account().buying_power) - 1000000, 2)
         )

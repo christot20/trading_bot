@@ -1,7 +1,7 @@
 # run pytest .\tests\db_tests.py
 from src.db_intializer import db
 
-def test_table_creator():
+def test_table_creator(): # check if able to connect to db and create tables
     db_thing = db("test")
     assert db_thing.table_creator() == [
         ('id', b'int', 'NO', 'PRI', None, 'auto_increment'), 
@@ -13,7 +13,7 @@ def test_table_creator():
         ('account_value', b'decimal(9,2)', 'YES', '', None, '')
     ]
 
-def test_table_inserter():
+def test_table_inserter(): # check if able to insert data into tables
     db_thing = db("test")
     insertions = [
         ("AMC", "BUY", 45, 18.36, "2022-08-16 13:23:44", 140533.69),

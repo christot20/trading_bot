@@ -5,8 +5,8 @@ from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.requests import StockLatestQuoteRequest
 from alpaca.common.exceptions import APIError
-from db_intializer import db
-from config import REMOTE_SERVER
+from src.db_intializer import db
+from src.config import REMOTE_SERVER
 
 class operations: 
     '''
@@ -15,11 +15,10 @@ class operations:
     as a static method used to check if the machine is currently connected to the
     internet as to not be disrupted when making api calls.
     '''
-    def __init__(self, stock_client, trading_client, stream, db_name):
+    def __init__(self, stock_client, trading_client, db_name):
         self.trading_client = trading_client
         self.db_name = db_name
         self.stock_client = stock_client
-        self.stream = stream
 
     @staticmethod
     def is_connected(hostname): # used to make sure connection to internet is made before calling apis

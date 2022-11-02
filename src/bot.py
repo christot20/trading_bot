@@ -1,6 +1,5 @@
 from alpaca.trading.client import TradingClient
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.trading.stream import TradingStream
 from src.config import Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY
 from src.trading_methods import methods
 
@@ -24,18 +23,15 @@ def main():
     if choice == "r":
         trading_client = TradingClient(Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, paper=True) # each has different keys since they are on different accounts
         stock_client = StockHistoricalDataClient(Reddit_ALPACA_API_KEY,  Reddit_ALPACA_SECRET_KEY)
-        stream = TradingStream(Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, paper=True)
-        trader.reddit_mode(trading_client, stock_client, stream)
+        trader.reddit_mode(trading_client, stock_client)
     elif choice == "a":
         trading_client = TradingClient(Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, paper=True) # paper=True enables paper trading
         stock_client = StockHistoricalDataClient(Algo_ALPACA_API_KEY,  Algo_ALPACA_SECRET_KEY)
-        stream = TradingStream(Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, paper=True)
-        trader.algo_mode(trading_client, stock_client, stream)
+        trader.algo_mode(trading_client, stock_client)
     else:
         trading_client = TradingClient(Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY, paper=True)
         stock_client = StockHistoricalDataClient(Neural_ALPACA_API_KEY,  Neural_ALPACA_SECRET_KEY)
-        stream = TradingStream(Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY, paper=True)
-        trader.neural_mode(trading_client, stock_client, stream)
+        trader.neural_mode(trading_client, stock_client)
 
 if __name__  == "__main__":
     main()
