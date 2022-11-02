@@ -20,9 +20,9 @@ $HolidayTable = @(
 $wshell = New-Object -ComObject wscript.shell # used for keyboard input
 if (($Day -ne "Saturday" -and $Day -ne "Sunday") -and ($Date -notin $HolidayTable)) # if it is trading day
 {
-    Start-Sleep ((get-date "04:00am") - (get-date)).TotalSeconds
-    Start-Process "c:/trading_bot/venv/Scripts/python.exe" -ArgumentList "c:/trading_bot/src/sheet_writer.py"
     venv\Scripts\activate
+    Start-Sleep ((get-date "04:00am") - (get-date)).TotalSeconds
+    Start-Process "c:/trading_bot/venv/Scripts/python.exe" -ArgumentList "c:/trading_bot/app/sheet_writer.py"
     Start-Sleep 5
-    streamlit run .\src\app.py 
+    streamlit run .\app\app.py 
 }

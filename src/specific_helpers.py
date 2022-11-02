@@ -132,7 +132,7 @@ class the_algo:
     Takes mean percentile of each category to find "relative value"
     This is the RV score
 
-    S&P 500 csv up to date as of 11/1/2022
+    S&P 500 csv up to date as of 11/1/2022 and provided by: https://www.kaggle.com/datasets/andrewmvd/sp-500-stocks
 
     Strategy influenced from Algorithmic Trading with Python by freecodecamp: https://www.youtube.com/watch?v=xfzGZB4HhEE
     '''
@@ -277,7 +277,7 @@ class the_net:
     
     The The Neural Net Model Stucture is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
     LSTM proves to be very effective and accurate when predicting time series, hence why it was chosen
-    S&P 500 csv up to date as of 11/1/2022
+    S&P 500 csv up to date as of 11/1/2022 and provided by: https://www.kaggle.com/datasets/andrewmvd/sp-500-stocks
 
     Strategy influenced by Stock Price Prediction Using Python & Machine Learning by Computer Science: https://www.youtube.com/watch?v=QIUxPv5PJOY
     '''
@@ -391,8 +391,8 @@ class the_net:
                                     pred_price,
                                     perc_chng,
                                     accuracy_avg,
-                                    perc_chng / accuracy_avg  # (was finicking with size of dataset, structure of net, and value eq)
-                                    # (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg if u want to base choices on accuracy
+                                    #perc_chng / accuracy_avg  # (was finicking with size of dataset, structure of net, and value eq)
+                                    (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg # if u want to base choices on accuracy
                                 ], 
                                 index=self.columns
                             ) 

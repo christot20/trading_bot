@@ -47,8 +47,8 @@ for i in range(0, len(df)):
     df.at[i,"Algo Account Value"] = a_trading_client.get_account().portfolio_value
     df.at[i,"Neural Account Value"] = m_trading_client.get_account().portfolio_value
     df.at[i,"Actual Time"] = datetime.datetime.now()
-    df.to_csv(f"{PROJECT_PATH}/src/acc_data.csv", encoding='utf-8')
-    time.sleep(60)
+    df.to_csv(f"{PROJECT_PATH}/app/acc_data.csv", encoding='utf-8')
+    # time.sleep(60)
 
 # i = 0
 # while i < len(df):

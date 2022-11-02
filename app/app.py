@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import streamlit as st  
 from alpaca.trading.client import TradingClient
 from alpaca.data.historical import StockHistoricalDataClient
-from src.config import Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY
+from src.config import Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, Algo_ALPACA_API_KEY, Algo_ALPACA_SECRET_KEY, Neural_ALPACA_API_KEY, Neural_ALPACA_SECRET_KEY, PROJECT_PATH
 ##### streamlit run .\src\tests.py
 
 # This is a quick streamlit webapp I 
@@ -59,7 +59,7 @@ while True:
         'Profit/Loss %'
     ]
     dataframes_positions = {}
-    acc_df = pd.read_csv("C:/trading_bot/src/acc_data.csv") 
+    acc_df = pd.read_csv(f"{PROJECT_PATH}/app/acc_data.csv") 
     for client in aliases.keys():
         stock_df = pd.DataFrame(columns = columns)
         appender = []
