@@ -17,21 +17,28 @@ $HolidayTable = @(
     'Thursday, November 23, 2023',
     'Monday, December 25, 2023'
 )
+$WeekTable = @(
+    # Days Bot Can't Trade
+    'Saturday',
+    'Sunday',
+    'Tuesday',
+    'Thursday'
+)
 
 $wshell = New-Object -ComObject wscript.shell # used for keyboard input
-if (($Day -ne "Saturday" -and $Day -ne "Sunday") -and ($Date -notin $HolidayTable)) # if it is trading day
+if (($Day -notin $WeekTable) -and ($Date -notin $HolidayTable)) # if it is trading day
 {
     $choices = 'm','a','r' # bot choices
     $counter = 0
     Foreach ($choice in $choices)
     {
-        Start-Process "c:/trading_bot/venv/Scripts/python.exe" -ArgumentList "c:/trading_bot/src/bot.py" # start script
+        Start-Process 'c:/trading_bot/venv/Scripts/python.exe' -ArgumentList 'c:/trading_bot/src/bot.py' # start script
         Start-Sleep 30 # wait for everything to load
         $wshell.SendKeys($choice) # used to input what to choose (r, a, or m)
         $wshell.SendKeys('{ENTER}') 
         if ($counter -eq 0)
         {
-            Start-Sleep ((get-date "09:30am") - (get-date)).TotalSeconds # for first choice, machine learning, wait until 9:30 to perform next methods
+            Start-Sleep ((get-date '09:30am') - (get-date)).TotalSeconds # for first choice, machine learning, wait until 9:30 to perform next methods
         }
         $counter++
     }

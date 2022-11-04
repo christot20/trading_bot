@@ -12,15 +12,15 @@ The point of the bot is to determine if the stock choices made by one
 method is better than the others.
 '''
 def main():
-    trader = methods()    
+    trader = methods() # different trading methods 
     while True:
-        valid_choices = ("r", "a", "m")
+        valid_choices = ("r", "a", "m") # user choice
         choice = input("Enter what method to choose (reddit: R, algorithmic: A, or machine learning: M): ").lower()
         if choice not in valid_choices:
             print("Please Enter a Valid Choice!")
         else:
             break
-    if choice == "r":
+    if choice == "r": # creates instance of trading bot with that method
         trading_client = TradingClient(Reddit_ALPACA_API_KEY, Reddit_ALPACA_SECRET_KEY, paper=True) # each has different keys since they are on different accounts
         stock_client = StockHistoricalDataClient(Reddit_ALPACA_API_KEY,  Reddit_ALPACA_SECRET_KEY)
         trader.reddit_mode(trading_client, stock_client)

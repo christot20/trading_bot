@@ -1,3 +1,5 @@
+#### REQUIRED TO USE THE BOT
+
 # # API info for each account
 # Reddit_ALPACA_API_KEY = 
 # Reddit_ALPACA_SECRET_KEY = 

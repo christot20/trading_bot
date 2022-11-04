@@ -39,8 +39,9 @@ st.title("R.A.M. Trading Realtime Data Dashboard")
 # creating a single-element container
 placeholder = st.empty()
 
-# near real-time / live feed simulation
+# real-time simulation begins
 while True:
+    # dataframes for each account created here
     aliases = {
     "Reddit" : r_trading_client.get_all_positions(),
     "Algo" : a_trading_client.get_all_positions(),
@@ -97,10 +98,8 @@ while True:
 
     with placeholder.container():
 
-        # create three columns
+        # Account value and buying power
         kpi1, kpi2, kpi3 = st.columns(3)
-
-        # fill in those three columns with respective metrics or KPIs
         kpi1.metric(
             label="Reddit Account Value 🤑",
             value=f"$ {round(float(r_trading_client.get_account().portfolio_value),2)} ",
@@ -141,7 +140,7 @@ while True:
             delta=round(float(m_trading_client.get_account().buying_power) - 1000000, 2)
         )
 
-        # create two columns for charts
+        # Daily Charts for each account
         fig_col1, fig_col2, fig_col3 = st.columns(3)
         with fig_col1:
             st.markdown("### Reddit Daily Chart")
@@ -158,7 +157,7 @@ while True:
             fig3 = px.line(acc_df, x="Date", y="Neural Account Value")
             st.write(fig3)
 
-        try:
+        try: # pie charts representing share of each stock in portfolio and bar charts for how each stock is performing
             fig_col4, fig_col5 = st.columns(2)
             with fig_col4:
                 st.markdown("### Reddit Positions Distributions")
@@ -214,9 +213,7 @@ while True:
                 fig9.update_layout(barmode='stack')
                 st.write(fig9)
             
-            
-
-
+            # Charts of each position and their raw data
             st.markdown("### Reddit Account Positions")
             st.dataframe(dataframes_positions["Reddit"])
             st.markdown("### Algo Account Positions")

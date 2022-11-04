@@ -37,7 +37,7 @@ class operations:
                 time.sleep(5)
                 pass # we ignore any errors, returning False
     
-    def db_logger(self, choice):
+    def db_logger(self, choice): # adds the values into list to be executed into db
         time.sleep(10)
         db_execute = []
         executer = db(self.db_name) # execute selling to be recorded in db
@@ -76,8 +76,8 @@ class operations:
                     operations.is_connected(REMOTE_SERVER)
                     # Market order
                     market_order_data = MarketOrderRequest(
-                                symbol=stock, # maybe do (buying_power)//(stock_price * 100)
-                                qty=amount, # gonna want to determine quantity based on amount of $ in acc and price per share
+                                symbol=stock, 
+                                qty=amount, 
                                 side=OrderSide.BUY,
                                 time_in_force=TimeInForce.DAY
                                 )
@@ -99,154 +99,3 @@ class operations:
             except APIError:
                 continue
         self.db_logger("SELL")
-
-    # def buyer(self, stocks): # used to buy stocks using alpaca-py api
-    #     # db_execute = []
-    #     for stock in stocks:
-    #         try:
-    #             operations.is_connected(REMOTE_SERVER)
-    #             acc_value = self.trading_client.get_account()
-    #             request_params = StockLatestQuoteRequest(symbol_or_symbols=stock) 
-    #             latest_quote = self.stock_client.get_stock_latest_quote(request_params)
-    #             ask_price = float(latest_quote[stock].ask_price)
-    #             print(ask_price)
-    #             print(latest_quote)
-    #             print(ask_price, acc_value.buying_power)
-
-    #             # stock_info = yf.Ticker(stock).info   
-    #             # market_price = float(stock_info['regularMarketPrice']) # price of stock 
-    #             # print(market_price, acc_value.buying_power)
-    #             # print(market_price, acc_value.cash)
-
-    #             amount = int((float(acc_value.buying_power ) * .005)//(ask_price)) # amount of stock to buy (roughly enough to buy 10 stocks a day for a month)
-    #             print(stock, " ", amount)   # I give each account 500k just in case it wants to buy an expensive stocks
-    #             # if float(ask_price) * amount < float(acc_value.buying_power) and (float(ask_price) * amount) > 0: # checks if possible to buy stock 
-    #             if float(ask_price) * amount > 0: # checks if possible to buy stock 
-    #                 operations.is_connected(REMOTE_SERVER)
-    #                 # price = self.streamer(amount)
-    #                 # Market order
-    #                 market_order_data = MarketOrderRequest(
-    #                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
-    #                             qty=amount, # gonna want to determine quantity based on amount of $ in acc and price per share
-    #                             side=OrderSide.BUY,
-    #                             time_in_force=TimeInForce.DAY
-    #                             )
-    #                 # Market order
-    #                 market_order = self.trading_client.submit_order(
-    #                                 order_data=market_order_data
-    #                             )
-    #                 print(market_order)
-    #         except APIError:
-    #             continue
-    #     #         price = self.streamer(amount)
-    #     #         # print("buy price: ", price)
-    #     #         db_execute.append((stock, "BUY", amount, price, market_order.submitted_at, self.trading_client.get_account().portfolio_value))
-    #     #     # else:
-    #     #     #     continue
-    #     self.db_logger("BUY")
-
-    # def seller(self, stocks): # used to sell stocks using alpaca-py api
-    #     # db_execute = []
-    #     for stock in stocks:
-    #         # operations.is_connected(REMOTE_SERVER)
-    #         # amount = [int(ticker.qty) for ticker in self.trading_client.get_all_positions() if ticker.symbol == stock][0]
-    #         # amount = 0
-    #         # for ticker in self.trading_client.get_all_positions():
-    #         #     if ticker.symbol == stock:
-    #         #         amount = int(ticker.qty)
-    #         # stock_info = yf.Ticker(stock).info
-    #         # market_price = float(stock_info['regularMarketPrice'])
-    #         operations.is_connected(REMOTE_SERVER)
-    #         sell = self.trading_client.close_position(stock) # sells positions based on price diff %
-    #         # price = self.streamer(int(sell.qty))
-    #         # print("sell price: ", price)
-    #         print(sell) # use for logging transactions (do same with buys for ur db)
-    #     #     db_execute.append((sell.symbol, "SELL", int(sell.qty), price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
-    #     self.db_logger("SELL")
-
-    # def streamer(self, amount):
-    #     async def trade_updates_callback(data: any):
-    #         await asyncio.sleep(2)
-    #         # print("on")
-    #         global qty
-    #         order = data.order
-    #         #if qty == 0:
-    #         qty += int(order.filled_qty) - qty
-    #         # else:
-    #         #     qty = qty + ()
-    #         price = float(order.filled_avg_price)
-    #         order_avg.append(float(price))
-    #         print(order)
-    #         # print(qty)
-    #         if qty == amount:
-    #             await self.stream.stop_ws()
-
-    #     global qty 
-    #     qty = 0
-    #     order_avg = []
-    #     # print(amount)
-    #     self.stream.subscribe_trade_updates(trade_updates_callback)
-    #     # x = threading.Thread(target = self.stream.run())
-    #     # x.start()
-    #     self.stream.run()
-    #     self.stream.stop()
-    #     # x.join()
-    #     return sum(order_avg) / len(order_avg)
-
-    # def buyer(self, stocks): # used to buy stocks using alpaca-py api
-    #     db_execute = []
-    #     executer = db(self.db_name) # execute buying to be recorded in db
-    #     while stocks:
-    #         try:
-    #             stock = stocks[0]
-    #             operations.is_connected(REMOTE_SERVER)
-    #             stock_info = yf.Ticker(stock).info
-    #             acc_value = self.trading_client.get_account()
-    #             market_price = float(stock_info['regularMarketPrice']) # price of stock 
-    #             print(market_price, acc_value.buying_power)
-    #             # print(market_price, acc_value.cash)
-    #             amount = int((float(acc_value.buying_power ) * .005)//(market_price)) # amount of stock to buy (roughly enough to buy 10 stocks a day for a month)
-    #             print(stock, " ", amount)                                       # I give each account 500k just in case it wants to buy an expensive stocks
-    #             if float(market_price) * amount < float(acc_value.buying_power) and (float(market_price) * amount) > 0: # checks if possible to buy stock 
-    #                 operations.is_connected(REMOTE_SERVER)
-    #                 # Market order
-    #                 market_order_data = MarketOrderRequest(
-    #                             symbol=stock, # maybe do (buying_power)//(stock_price * 100)
-    #                             qty=amount, # gonna want to determine quantity based on amount of $ in acc and price per share
-    #                             side=OrderSide.BUY,
-    #                             time_in_force=TimeInForce.DAY
-    #                             )
-    #                 # Market order
-    #                 market_order = self.trading_client.submit_order(
-    #                                 order_data=market_order_data
-    #                             )
-    #                 db_execute.append((stock, "BUY", amount, market_price, market_order.submitted_at, self.trading_client.get_account().portfolio_value))
-    #             del stocks[0]
-    #             print(stocks)
-    #             print(market_order)
-    #         except:
-    #             print("retrying")
-    #             continue
-    #     executer.table_inserter(db_execute)
-    
-    # def seller(self, stocks): # used to sell stocks using alpaca-py api
-    #     executer = db(self.db_name) # execute selling to be recorded in db
-    #     db_execute = []
-    #     while stocks:
-    #         try: 
-    #             print(stocks)
-    #             stock = stocks[0]
-    #             operations.is_connected(REMOTE_SERVER)
-    #             stock_info = yf.Ticker(stock).info
-    #             # time.sleep(2) # let stock info load
-    #             market_price = float(stock_info['regularMarketPrice'])
-    #             operations.is_connected(REMOTE_SERVER)
-    #             sell = self.trading_client.close_position(stock) # sells positions based on price diff %
-    #             print(sell) # use for logging transactions (do same with buys for ur db)
-    #             db_execute.append((sell.symbol, "SELL", int(sell.qty), market_price, sell.submitted_at, self.trading_client.get_account().portfolio_value))
-    #             del stocks[0]
-    #             print(stocks)
-    #         except:
-    #             print("retrying")
-    #             continue
-    #     executer.table_inserter(db_execute)
