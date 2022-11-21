@@ -4,7 +4,6 @@ import datetime
 from alpaca.trading.requests import MarketOrderRequest, GetOrdersRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.data.requests import StockLatestQuoteRequest
-from alpaca.common.exceptions import APIError
 from src.db_intializer import db
 from src.config import REMOTE_SERVER
 
@@ -38,7 +37,8 @@ class operations:
                 pass # we ignore any errors, returning False
     
     def db_logger(self, choice): # adds the values into list to be executed into db
-        time.sleep(10)
+        time.sleep(60*5)
+        operations.is_connected(REMOTE_SERVER)
         db_execute = []
         executer = db(self.db_name) # execute selling to be recorded in db
         today = datetime.date.today()
@@ -56,7 +56,7 @@ class operations:
         for order in self.trading_client.get_orders(orders):
             print("-------------------------------")
             print(order)
-            db_execute.insert(0, (order.symbol, choice, order.filled_qty, order.filled_avg_price, order.filled_at - datetime.timedelta(hours=4, minutes=0), self.trading_client.get_account().portfolio_value))
+            db_execute.insert(0, (order.symbol, choice, order.filled_qty, order.filled_avg_price, order.filled_at - datetime.timedelta(hours=5, minutes=0), self.trading_client.get_account().portfolio_value))
         executer.table_inserter(db_execute) # insert into db
 
     def buyer(self, stocks): # used to buy stocks using alpaca-py api
@@ -86,7 +86,7 @@ class operations:
                                     order_data=market_order_data
                                 )
                     print(market_order)
-            except APIError:
+            except:
                 continue
         self.db_logger("BUY")
 
@@ -96,6 +96,6 @@ class operations:
                 operations.is_connected(REMOTE_SERVER)
                 sell = self.trading_client.close_position(stock) # sells positions based on price diff %
                 print(sell) # use for logging transactions (do same with buys for ur db)
-            except APIError:
+            except:
                 continue
         self.db_logger("SELL")

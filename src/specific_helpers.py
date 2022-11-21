@@ -37,7 +37,9 @@ class the_reddit:
             'WSB3', 'IV', 'LMAO', 'RC', 'RYAN', 'COHEN', 'MOON', 'IRS', 'TAX', 'FOMO', 'CPI', 'PM', 'F', 'U',
             'ITM', 'RIP', 'LOL', 'AH', 'PUT', 'CALL', 'GO', 'BABY', 'NFT', 'HANDS', 'SEC', 'LINK', 'OH', 'RSI',
             'WSB4', 'WSB5', 'WSB6', 'WSB7', 'WSB8', 'WSB9', 'WSB10', 'WTF', 'BTFO', 'ATH', 'DRS', 'WTH', 'DTC', 'IMO'
-            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED', 'TA', 'IG', 'EV', 'CEO', 'CTO', 'COO', 'CFO', 'IQ', 'TWTR'
+            'ATM', 'AI', 'FUD', 'YTD', 'GET', 'OG', 'TLDR', 'FED', 'TA', 'IG', 'EV', 'CEO', 'CTO', 'COO', 'CFO', 'IQ', 'TWTR',
+            'YOU', 'WE', 'IS', 'IT', 'BE', 'UP', 'FOR', 'ALL', 'NOW', 'CIA', 'FBI', 'SO', 'OR', 'AI', 'ML', 'AM', 'LETS', 'GO', 
+            'MF', 'WW', 'ON', 'WWW', 'OG'
         ]
         self.stop = [word.upper() for word in set(stopwords.words('english'))]
         self.url = "https://apewisdom.io/api/v1.0/filter/wallstreetbets/page/1" # url to send request to
@@ -271,9 +273,9 @@ class the_net:
         1. "Accuracy" of each model run of stock time series using several methodologies (RMSE, MPAE, MAE) and getting the average between them
         2. Predicted Stock Price for Next Day based on training and testing data
 
-    Stocks are then chosen based on a dataframe with the "value" score being determined by: perc_chng / accuracy_avg   
-    This is balances the overall value of choosing each by anchoring its anticipated price to the accuracy of the model itself.
-    This leads to some interesting choices from the model that can be risky or safe.
+    Stocks are then chosen based on a dataframe with the "value" score being determined by: (perc_chng / abs(perc_chng * accuracy_avg)) / accuracy_avg   
+    This allows the Neural Net method to choose the stocks with the greatest prediction accuracy based on the above mentioned methodologies
+    While also choosing the ones that will be going up in price according to the Neural Network
     
     The The Neural Net Model Stucture is a Stacked LSTM Structure (https://machinelearningmastery.com/stacked-long-short-term-memory-networks/)
     LSTM proves to be very effective and accurate when predicting time series, hence why it was chosen
