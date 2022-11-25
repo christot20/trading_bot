@@ -37,7 +37,7 @@ class operations:
                 pass # we ignore any errors, returning False
     
     def db_logger(self, choice): # adds the values into list to be executed into db
-        time.sleep(60)
+        time.sleep(30)
         operations.is_connected(REMOTE_SERVER)
         db_execute = []
         executer = db(self.db_name) # execute selling to be recorded in db
