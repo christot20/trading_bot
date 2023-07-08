@@ -172,15 +172,25 @@ class the_algo:
                 gross_profit = data[symbol]['advanced-stats']['grossProfit']
             except: # Key error or JSON request error
                 continue
-            
+
+            # batch_api_call_url = f'https://sandbox.iexapis.com/stable/stock/market/batch?symbols={symbol}&types=quote,advanced-stats&token={IEX_CLOUD_API_TOKEN}' # api call to get IEX info
+            # data1 = requests.head(batch_api_call_url)
+            # print(data1.status_code)
+            # data = requests.get(batch_api_call_url).json() # IEX data
+            # print(data)
+            # enterprise_value = data[symbol]['advanced-stats']['enterpriseValue']
+            # ebitda = data[symbol]['advanced-stats']['EBITDA']
+            # gross_profit = data[symbol]['advanced-stats']['grossProfit']
+
+        
             try:
                 ev_to_ebitda = enterprise_value/ebitda
-            except TypeError: # used if value is None, N/A
+            except: # used if value is None, N/A
                 ev_to_ebitda = np.NaN
             
             try:
                 ev_to_gross_profit = enterprise_value/gross_profit
-            except TypeError: # used if value is None, N/A
+            except: # used if value is None, N/A
                 ev_to_gross_profit = np.NaN
 
             try:
@@ -202,9 +212,10 @@ class the_algo:
                     ], 
                     index=self.rv_columns
                 ) 
-            except KeyError:
+            except:
                 continue
             appender.append(df_new_row)  
+        # print(appender)
         rv_dataframe = pd.concat(appender, axis=1, ignore_index=True).T  # dataframe with values
         return rv_dataframe
     
